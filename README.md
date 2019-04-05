@@ -1,4 +1,7 @@
 # ghq
+~~~
+go get -u github.com/GHQEmperor/ghq
+~~~
 ## 简介
 ~~~
 这是一个golang菜鸟的极简web框架。（基于内置http包）
