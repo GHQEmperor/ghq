@@ -1,7 +1,7 @@
 package ghq
 
 import (
-	"github.com/pkg/errors"
+	"errors"
 	"strconv"
 )
 
@@ -14,21 +14,24 @@ func (rw *RW) GetString(key string) (value string) {
 	return
 }
 
-func (rw *RW) GetInt(key string) (value int,err error) {
-	rw.isparseForm()
-	valueStr := rw.R.FormValue(key)
+func (rw *RW) GetInt(key string) (value int, err error) {
+	//rw.isparseForm()
+	//valueStr := rw.R.FormValue(key)
+	//if valueStr == "" {
+	//	valueStr = rw.R.PostFormValue(key)
+	//	if valueStr == "" {
+	//		return 0, errors.New("no this int parameter")
+	//	}
+	//}
+	valueStr := rw.GetString(key)
 	if valueStr == "" {
-		valueStr = rw.R.PostFormValue(key)
-		if valueStr == "" {
-			return 0, errors.New("no this int parameter")
-		}
+		return 0, errors.New("no this int parameter")
 	}
-
 	// TODO:if Atoi failed ,the server will panic?
 	return strconv.Atoi(valueStr)
 }
 
-func (rw *RW) isparseForm()  {
+func (rw *RW) isparseForm() {
 	if !rw.isParseForm {
 		rw.R.ParseForm()
 		rw.isParseForm = true

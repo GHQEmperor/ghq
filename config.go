@@ -8,10 +8,11 @@ import (
 
 // loading config.json in memory.
 func (r *Router) LoadConfig() (err error) {
-	configFile, err := os.Open("config/config.json")
+	configFile, err := os.Open("config.json")
 	if err != nil {
 		return
 	}
+	defer configFile.Close()
 	configBytes, err := ioutil.ReadAll(configFile)
 	if err != nil {
 		return

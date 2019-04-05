@@ -21,6 +21,7 @@ type RW struct {
 	W http.ResponseWriter
 	R *http.Request
 	isParseForm bool
+	*Router
 }
 
 type FuncRW func(rw RW)
@@ -105,9 +106,9 @@ func newFuncRWs() *[]FuncRW {
 // create a function: func(w http.ResponseWriter, r *http.Request)
 // to register http.HandleFunc.
 func (r *Router) newUri(uri string, functions *[]FuncRW) {
-	r.uriFuncM[uri] = func(w http.ResponseWriter, r *http.Request) {
-		rw := RW{w,r,false}
-		switch r.Method {
+	r.uriFuncM[uri] = func(responseWriter http.ResponseWriter, request *http.Request) {
+		rw := RW{responseWriter,request,false,r}
+		switch request.Method {
 		case http.MethodGet:
 			(*functions)[MethodGet](rw)
 		case http.MethodHead:
