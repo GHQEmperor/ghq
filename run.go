@@ -1,8 +1,8 @@
 package ghq
 
 import (
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -27,10 +27,10 @@ func (r *Router) Run() error {
 
 	// register the static file path to http package.
 	for _, sf := range r.staticFileUri {
-		http.Handle(sf.Uri,http.StripPrefix(sf.Uri,http.FileServer(http.Dir(sf.DirPath))))
+		http.Handle(sf.Uri, http.StripPrefix(sf.Uri, http.FileServer(http.Dir(sf.DirPath))))
 	}
 	// TODO: custom 404 page
-	if err := r.LoadConfig();err != nil {
+	if err := r.LoadConfig(); err != nil {
 		return err
 	}
 	// set serve port.
@@ -38,6 +38,6 @@ func (r *Router) Run() error {
 	if !ok {
 		return errors.New("don't appoint port")
 	}
-	fmt.Println("run port ",port)
+	fmt.Println("run port ", port)
 	return http.ListenAndServe(port, nil)
 }
