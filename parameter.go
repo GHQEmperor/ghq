@@ -33,7 +33,7 @@ func (rw *RW) GetInt(key string) (value int, err error) {
 
 func (rw *RW) isparseForm() {
 	if !rw.isParseForm {
-		rw.R.ParseForm()
+		_ = rw.R.ParseForm()
 		rw.isParseForm = true
 	}
 }

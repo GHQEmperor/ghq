@@ -28,7 +28,8 @@ func (r *Router) LoadConfig() (err error) {
 	return
 }
 
-func (r *Router) GetConfig(configName string) (config string, ok bool) {
+//func (r *Router) GetConfig(configName string) (config string, ok bool) {
+func GetConfig(configName string) (config string, ok bool) {
 	//config,ok = r.Config[configName]
 	config, ok = Config[configName]
 	return

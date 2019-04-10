@@ -34,7 +34,7 @@ func (r *Router) Run() error {
 		return err
 	}
 	// set serve port.
-	port, ok := r.GetConfig("port")
+	port, ok := GetConfig("port")
 	if !ok {
 		return errors.New("don't appoint port")
 	}

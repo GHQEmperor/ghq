@@ -13,19 +13,19 @@ type Router struct {
 
 	// storage uri function.
 	// this uri function consist of a functionsM slice.
-	uriFuncM   map[string]httpRW
+	uriFuncM      map[string]httpRW
 	staticFileUri []StaticFile
 }
 
 type RW struct {
-	W http.ResponseWriter
-	R *http.Request
+	W           http.ResponseWriter
+	R           *http.Request
 	isParseForm bool
 	*Router
 }
 
 type FuncRW func(rw RW)
-type httpRW func(w http.ResponseWriter,r *http.Request)
+type httpRW func(w http.ResponseWriter, r *http.Request)
 type funcMap map[string]*[]FuncRW
 
 const (
@@ -43,55 +43,55 @@ const (
 const MethodCount = 9
 
 // if the slice is not initialized,this function initializes the slice.
-func checkMethodInit(uri string ,f funcMap)  {
-	_ ,ok:= f[uri]
+func checkMethodInit(uri string, f funcMap) {
+	_, ok := f[uri]
 	if !ok {
 		f[uri] = newFuncRWs()
 	}
 }
 
 func (r *Router) Get(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodGet] = function
 }
 
 func (r *Router) Head(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodHead] = function
 }
 
 func (r *Router) Post(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodPost] = function
 }
 
 func (r *Router) Put(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodPut] = function
 }
 
 func (r *Router) Patch(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodPatch] = function
 }
 
 func (r *Router) Delete(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodDelete] = function
 }
 
 func (r *Router) Connect(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodConnect] = function
 }
 
 func (r *Router) Options(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodOptions] = function
 }
 
 func (r *Router) Trace(uri string, function FuncRW) {
-	checkMethodInit(uri,r.functionsM)
+	checkMethodInit(uri, r.functionsM)
 	(*r.functionsM[uri])[MethodOptions] = function
 }
 
@@ -107,7 +107,7 @@ func newFuncRWs() *[]FuncRW {
 // to register http.HandleFunc.
 func (r *Router) newUri(uri string, functions *[]FuncRW) {
 	r.uriFuncM[uri] = func(responseWriter http.ResponseWriter, request *http.Request) {
-		rw := RW{responseWriter,request,false,r}
+		rw := RW{responseWriter, request, false, r}
 		switch request.Method {
 		case http.MethodGet:
 			(*functions)[MethodGet](rw)
@@ -135,5 +135,5 @@ func (r *Router) newUri(uri string, functions *[]FuncRW) {
 
 func _404(rw RW) {
 	rw.W.WriteHeader(404)
-	rw.W.Write([]byte("404"))
+	_, _ = rw.W.Write([]byte("404"))
 }
