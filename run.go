@@ -9,6 +9,9 @@ import (
 func New() *Router {
 	var RouterC Router
 	//RouterC.Config = make(map[string]string)
+	if err := RouterC.LoadConfig(); err != nil {
+		panic(err)
+	}
 	RouterC.functionsM = make(funcMap)
 	RouterC.uriFuncM = make(map[string]httpRW)
 	return &RouterC
@@ -30,9 +33,7 @@ func (r *Router) Run() error {
 		http.Handle(sf.Uri, http.StripPrefix(sf.Uri, http.FileServer(http.Dir(sf.DirPath))))
 	}
 	// TODO: custom 404 page
-	if err := r.LoadConfig(); err != nil {
-		return err
-	}
+
 	// set serve port.
 	port, ok := GetConfig("port")
 	if !ok {
