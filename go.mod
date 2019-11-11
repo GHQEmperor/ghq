@@ -1,4 +1,4 @@
-module ghq
+module gitee.com/moyrn/ghq/v1
 
 go 1.12
 
