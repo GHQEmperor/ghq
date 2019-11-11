@@ -2,7 +2,7 @@ package watchdogs
 
 import (
 	"errors"
-	"github.com/GHQEmperor/ghq"
+	"ghq"
 	"github.com/gogf/gf/container/gmap"
 	"net/http"
 	"net/rpc"
