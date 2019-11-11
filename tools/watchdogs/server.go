@@ -43,7 +43,7 @@ func AddContainer(key string, timeoutFunc, deadFunc, deadReturn func(context int
 }
 
 func Run() {
-	if err := rpc.Register(Container{}); err != nil {
+	if err := rpc.Register(ContMap); err != nil {
 		panic(err)
 	}
 	if err := rpc.Register(WatchDog{}); err != nil {
@@ -70,7 +70,7 @@ type FeedDogReq struct {
 	Context   string `json:"context"`
 }
 
-func (c *Container) RpcFeedDog(req FeedDogReq, res *Message) error {
+func (c *ContainerMap) RpcFeedDog(req FeedDogReq, res *Message) error {
 	if req.Container == "" || req.Key == "" || req.Context == "" {
 		res = &Message{
 			Status: 10999,
@@ -78,6 +78,7 @@ func (c *Container) RpcFeedDog(req FeedDogReq, res *Message) error {
 		}
 		return errors.New("参数不完全")
 	}
+
 	cont, ok := ContMap[req.Container]
 	if !ok {
 		res = &Message{
