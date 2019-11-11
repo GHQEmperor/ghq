@@ -43,6 +43,10 @@ func AddContainer(key string, timeoutFunc, deadFunc, deadReturn func(context int
 }
 
 func Run() {
+	router := ghq.New()
+	if err := router.LoadConfig(); err != nil {
+		panic(err)
+	}
 	if err := rpc.Register(&ContMap); err != nil {
 		panic(err)
 	}
