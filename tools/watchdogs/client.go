@@ -17,15 +17,15 @@ type Client struct {
 	client *rpc.Client
 }
 
-func NewRpcClient() (*Client, error) {
+func NewRpcClient(serverIP string) (*Client, error) {
 	router := ghq.New()
 	if err := router.LoadConfig(); err != nil {
 		return nil, err
 	}
-	serverIP, ok := ghq.GetConfig("server_ip")
-	if !ok {
-		panic("server_ip is not exist")
-	}
+	//serverIP, ok := ghq.GetConfig("server_ip")
+	//if !ok {
+	//	panic("server_ip is not exist")
+	//}
 	client, err := rpc.DialHTTP("tcp", serverIP)
 	if err != nil {
 		return nil, err
