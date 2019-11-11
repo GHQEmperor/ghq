@@ -46,9 +46,9 @@ func Run() {
 	if err := rpc.Register(&ContMap); err != nil {
 		panic(err)
 	}
-	if err := rpc.Register(WatchDog{}); err != nil {
-		panic(err)
-	}
+	//if err := rpc.Register(WatchDog{}); err != nil {
+	//	panic(err)
+	//}
 	rpc.HandleHTTP()
 	port, ok := ghq.GetConfig("rpc_dog_port")
 	if !ok {
