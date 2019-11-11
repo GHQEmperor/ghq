@@ -22,6 +22,10 @@ func (w *WatchDog) GetKey() interface{} {
 	return w.key
 }
 
+func (w *WatchDog) GetContext() interface{} {
+	return w.context
+}
+
 func (w *WatchDog) feed() {
 	w.mutex.Lock()
 	if !w.isClose {
@@ -69,7 +73,7 @@ func (w *WatchDog) close() {
 /*
 	deadFunc, deadReturn
 */
-func (w *WatchDog) dogRunning(timeoutFunc, deadFunc, deadReturn func(context interface{}), timeout time.Duration) {
+func (w *WatchDog) dogRunning(timeoutFunc, deadFunc, deadReturn func(wg *WatchDog), timeout time.Duration) {
 	afterTime := timeout
 	after := time.NewTimer(afterTime)
 	defer after.Stop()
@@ -78,17 +82,17 @@ func (w *WatchDog) dogRunning(timeoutFunc, deadFunc, deadReturn func(context int
 		select {
 		case <-w.foodChan:
 		case <-after.C:
-			timeoutFunc(w.context)
+			timeoutFunc(w)
 			w.container.removeDog(w.key)
 			w.close()
 			return
 		case <-w.deadChan:
-			deadFunc(w.context)
+			deadFunc(w)
 			w.container.removeDog(w.key)
 			w.close()
 			return
 		case <-w.deadReturnChan:
-			deadReturn(w.context)
+			deadReturn(w)
 			w.container.removeDog(w.key)
 			w.close()
 			return

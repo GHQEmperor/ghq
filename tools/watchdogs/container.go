@@ -20,7 +20,7 @@ func NewContainer() *Container {
 	return &Container{gmap.New()}
 }
 
-func (c *Container) NewDog(key, context interface{}, after time.Duration, timeoutFunc, deadFunc, deadReturn func(context interface{})) error {
+func (c *Container) NewDog(key, context interface{}, after time.Duration, timeoutFunc, deadFunc, deadReturn func(wg *WatchDog)) error {
 	newDog := WatchDog{
 		key:            key,
 		context:        context,
@@ -43,8 +43,10 @@ func (c *Container) NewDog(key, context interface{}, after time.Duration, timeou
 
 func (c *Container) FeedDog(key interface{}) error {
 	dogInf := c._gmap.Get(key)
+	//fmt.Println("key:", key, "dogInf:", dogInf)
 	if dogInf != nil {
 		dog := dogInf.(*WatchDog)
+		//fmt.Println("key:", key, "dog.GetKey:", dog.GetKey(), "equal:", key == dog.GetKey())
 		if key != dog.GetKey() {
 			return ErrAnotherRunning
 		}
@@ -61,7 +63,7 @@ func (c *Container) DeadDog(key interface{}) error {
 		dog.dead()
 		return nil
 	}
-	return nil
+	return ErrNoThisDog
 }
 
 func (c *Container) DeadDogReturn(key interface{}) error {
@@ -69,17 +71,19 @@ func (c *Container) DeadDogReturn(key interface{}) error {
 	if dogInf != nil {
 		dog := dogInf.(*WatchDog)
 		dog.deadReturn()
+		return nil
 	}
-	return nil
+	return ErrNoThisDog
 }
 
-func (c *Container) Destroy(key interface{}) {
+func (c *Container) Destroy(key interface{}) error {
 	dogInf := c._gmap.Get(key)
 	if dogInf != nil {
 		dog := dogInf.(*WatchDog)
 		dog.destroy()
+		return nil
 	}
-	return
+	return ErrNoThisDog
 }
 
 func (c *Container) removeDog(key interface{}) {
@@ -100,7 +104,7 @@ func (c *Container) setNotRun(key interface{}, run *WatchDog) error {
 		run.close()
 		return ErrAnotherRunning
 	}
-	newDog := run
-	c._gmap.Set(key, newDog)
+	//newDog := run
+	c._gmap.Set(key, run)
 	return nil
 }

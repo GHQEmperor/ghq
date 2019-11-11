@@ -2,6 +2,7 @@ package watchdogs
 
 import (
 	"errors"
+	"fmt"
 	"github.com/GHQEmperor/ghq"
 	"github.com/gogf/gf/container/gmap"
 	"net/http"
@@ -11,26 +12,26 @@ import (
 
 var ContMap ContainerMap
 
-type ContainerMap map[string]ContainerFunc
+type ContainerMap map[string]*ContainerFunc
 type ContainerFunc struct {
 	Container   Container
-	TimeoutFunc func(context interface{})
-	DeadFunc    func(context interface{})
-	DeadReturn  func(context interface{})
+	TimeoutFunc func(wg *WatchDog)
+	DeadFunc    func(wg *WatchDog)
+	DeadReturn  func(wg *WatchDog)
 	After       time.Duration
 }
 
 // 本地调用,创建 Container
 // 并添加处理函数
-func AddContainer(key string, timeoutFunc, deadFunc, deadReturn func(context interface{}), after time.Duration) error {
+func AddContainer(key string, timeoutFunc, deadFunc, deadReturn func(wg *WatchDog), after time.Duration) error {
 	if ContMap == nil {
-		ContMap = make(map[string]ContainerFunc)
+		ContMap = make(map[string]*ContainerFunc)
 	}
 	_, ok := ContMap[key]
 	if ok {
 		return errors.New("this container is exist")
 	}
-	ContMap[key] = ContainerFunc{
+	ContMap[key] = &ContainerFunc{
 		Container: Container{
 			_gmap: gmap.New(),
 		},
@@ -50,14 +51,12 @@ func Run() {
 	if err := rpc.Register(&ContMap); err != nil {
 		panic(err)
 	}
-	//if err := rpc.Register(WatchDog{}); err != nil {
-	//	panic(err)
-	//}
 	rpc.HandleHTTP()
 	port, ok := ghq.GetConfig("rpc_dog_port")
 	if !ok {
 		panic("rpc_dog_port is not found")
 	}
+	fmt.Printf("[ watchdogs running in port: %v ]\n", port)
 	if err := http.ListenAndServe(port, nil); err != nil {
 		panic(err)
 	}
@@ -68,47 +67,105 @@ type Message struct {
 	Error  string `json:"error"`
 }
 
-type FeedDogReq struct {
+type DogReq struct {
 	Container string `json:"container"`
 	Key       string `json:"key"`
 	Context   string `json:"context"`
 }
 
-func (c *ContainerMap) RpcFeedDog(req FeedDogReq, res *Message) error {
+func (c *ContainerMap) RpcFeedDog(req DogReq, res *Message) error {
 	if req.Container == "" || req.Key == "" || req.Context == "" {
-		res = &Message{
-			Status: 10999,
-			Error:  "参数不完全",
-		}
-		return errors.New("参数不完全")
+		res.Status = 10999
+		res.Error = "参数不完全"
+		return nil
 	}
 
-	cont, ok := ContMap[req.Container]
+	cont, ok := (*c)[req.Container]
 	if !ok {
-		res = &Message{
-			Status: 10999,
-			Error:  "无此 Container",
-		}
-		return errors.New("无此 Container")
+		res.Status = 10999
+		res.Error = "无此 Container"
+		return nil
 	}
-	if err := cont.Container.FeedDog(req); err != nil {
+	if err := cont.Container.FeedDog(req.Key); err != nil {
+		//fmt.Println("cont.Container.FeedDog(req) error:", err)
 		if err != ErrNoThisDog {
-			res = &Message{
-				Status: 10001,
-				Error:  err.Error(),
-			}
-			return err
+			res.Status = 10001
+			res.Error = err.Error()
+			return nil
 		}
-		if err := cont.Container.NewDog(req.Key, req.Context, cont.After,
-			cont.TimeoutFunc,
-			cont.DeadFunc,
-			cont.DeadReturn); err != nil {
-			res = &Message{
-				Status: 10001,
-				Error:  err.Error(),
-			}
-			return err
+		if err := cont.Container.NewDog(req.Key, req.Context, cont.After, cont.TimeoutFunc, cont.DeadFunc, cont.DeadReturn); err != nil {
+			res.Status = 10001
+			res.Error = err.Error()
+			//fmt.Println("cont.Container.NewDog error:", err)
+			return nil
 		}
 	}
+	res.Status = 10000
+	return nil
+}
+
+func (c *ContainerMap) RpcDeadDog(req DogReq, res *Message) error {
+	if req.Container == "" || req.Key == "" {
+		res.Status = 10999
+		res.Error = "参数不完全"
+		return nil
+	}
+	cont, ok := (*c)[req.Container]
+	if !ok {
+		res.Status = 10999
+		res.Error = "无此 Container"
+		return nil
+	}
+	if err := cont.Container.DeadDog(req.Key); err != nil {
+		res.Status = 10999
+		res.Error = err.Error()
+		return nil
+	}
+
+	res.Status = 10000
+	return nil
+}
+
+func (c *ContainerMap) RpcDeadReturn(req DogReq, res *Message) error {
+	if req.Container == "" || req.Key == "" {
+		res.Status = 10999
+		res.Error = "参数不完全"
+		return nil
+	}
+	cont, ok := (*c)[req.Container]
+	if !ok {
+		res.Status = 10999
+		res.Error = "无此 Container"
+		return nil
+	}
+	if err := cont.Container.DeadDogReturn(req.Key); err != nil {
+		res.Status = 10999
+		res.Error = err.Error()
+		return nil
+	}
+
+	res.Status = 10000
+	return nil
+}
+
+func (c *ContainerMap) RpcDestroy(req DogReq, res *Message) error {
+	if req.Container == "" || req.Key == "" {
+		res.Status = 10999
+		res.Error = "参数不完全"
+		return nil
+	}
+	cont, ok := (*c)[req.Container]
+	if !ok {
+		res.Status = 10999
+		res.Error = "无此 Container"
+		return nil
+	}
+	if err := cont.Container.Destroy(req.Key); err != nil {
+		res.Status = 10999
+		res.Error = err.Error()
+		return nil
+	}
+
+	res.Status = 10000
 	return nil
 }
