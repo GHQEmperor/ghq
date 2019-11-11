@@ -43,7 +43,7 @@ func AddContainer(key string, timeoutFunc, deadFunc, deadReturn func(context int
 }
 
 func Run() {
-	if err := rpc.Register(ContMap); err != nil {
+	if err := rpc.Register(&ContMap); err != nil {
 		panic(err)
 	}
 	if err := rpc.Register(WatchDog{}); err != nil {
