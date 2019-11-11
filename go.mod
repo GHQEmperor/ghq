@@ -1,4 +1,4 @@
-module gitee.com/moyrn/ghq/v1
+module github.com/GHQEmperor/ghq
 
 go 1.12
 
