@@ -1,7 +1,6 @@
 package watchdogs
 
 import (
-	"github.com/GHQEmperor/ghq"
 	"net/rpc"
 )
 
@@ -19,14 +18,6 @@ type Client struct {
 }
 
 func NewRpcClient(serverIP, container string) (*Client, error) {
-	router := ghq.New()
-	if err := router.LoadConfig(); err != nil {
-		return nil, err
-	}
-	//serverIP, ok := ghq.GetConfig("server_ip")
-	//if !ok {
-	//	panic("server_ip is not exist")
-	//}
 	client, err := rpc.DialHTTP("tcp", serverIP)
 	if err != nil {
 		return nil, err
